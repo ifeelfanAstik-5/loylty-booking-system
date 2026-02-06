@@ -1,0 +1,338 @@
+{
+  "info": {
+    "name": "Movie Booking System API",
+    "description": "API collection for Movie Ticket Booking System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "Get All Cities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["cities"]
+            }
+          }
+        },
+        {
+          "name": "Get City by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cities/{{cityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cities", "{{cityId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movies",
+      "item": [
+        {
+          "name": "Get Movies by City",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/movies/city/{{cityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["movies", "city", "{{cityId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Movies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/movies/search?title={{title}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["movies", "search"],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "{{title}}",
+                  "description": "Movie title to search"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shows",
+      "item": [
+        {
+          "name": "Get Shows by Movie and City",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shows/movie/{{movieId}}/city/{{cityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shows", "movie", "{{movieId}}", "city", "{{cityId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Shows Grouped by Cinema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shows/movie/{{movieId}}/city/{{cityId}}/grouped",
+              "host": ["{{baseUrl}}"],
+              "path": ["shows", "movie", "{{movieId}}", "city", "{{cityId}}", "grouped"]
+            }
+          }
+        },
+        {
+          "name": "Get Show by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shows/{{showId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shows", "{{showId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seats",
+      "item": [
+        {
+          "name": "Get Seat Layout",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/seats/show/{{showId}}/layout",
+              "host": ["{{baseUrl}}"],
+              "path": ["seats", "show", "{{showId}}", "layout"]
+            }
+          }
+        },
+        {
+          "name": "Get Seat Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[1, 2, 3]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/seats/show/{{showId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["seats", "show", "{{showId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Lock Seats",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": 1,\n  \"seatIds\": [1, 2, 3],\n  \"userId\": \"user123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/lock-seats",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "lock-seats"]
+            }
+          }
+        },
+        {
+          "name": "Unlock Seats",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": 1,\n  \"seatIds\": [1, 2, 3],\n  \"userId\": \"user123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/unlock-seats",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "unlock-seats"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": 1,\n  \"guestName\": \"John Doe\",\n  \"guestEmail\": \"john@example.com\",\n  \"seatIds\": [1, 2, 3],\n  \"userId\": \"user123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Create City",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New City\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "cities"]
+            }
+          }
+        },
+        {
+          "name": "Create Theater Chain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Theater Chain\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/theater-chains",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "theater-chains"]
+            }
+          }
+        },
+        {
+          "name": "Create Cinema",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Cinema\",\n  \"address\": \"123 Main St\",\n  \"cityId\": 1,\n  \"theaterChainId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/cinemas",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "cinemas"]
+            }
+          }
+        },
+        {
+          "name": "Create Movie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Movie\",\n  \"description\": \"Movie description\",\n  \"durationMinutes\": 150,\n  \"language\": \"English\",\n  \"genre\": \"Action\",\n  \"rating\": \"UA\",\n  \"releaseDate\": \"2024-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/movies",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "movies"]
+            }
+          }
+        },
+        {
+          "name": "Create Show",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": 1,\n  \"screenId\": 1,\n  \"showTime\": \"2024-01-01T10:00:00\",\n  \"endTime\": \"2024-01-01T12:30:00\",\n  \"basePrice\": 250.00,\n  \"premiumPrice\": 350.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/shows",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "shows"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
