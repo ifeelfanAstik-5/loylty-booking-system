@@ -19,20 +19,20 @@ public class ShowController {
     
     @GetMapping("/movie/{movieId}/city/{cityId}")
     public ResponseEntity<List<ShowDto>> getShowsByMovieAndCity(
-            @PathVariable Long movieId,
-            @PathVariable Long cityId) {
+            @PathVariable("movieId") Long movieId,
+            @PathVariable("cityId") Long cityId) {
         return ResponseEntity.ok(showService.getShowsByMovieAndCity(movieId, cityId));
     }
     
     @GetMapping("/movie/{movieId}/city/{cityId}/grouped")
     public ResponseEntity<Map<com.loylty.moviebooking.dto.CinemaDto, List<ShowDto>>> getShowsByMovieAndCityGroupedByCinema(
-            @PathVariable Long movieId,
-            @PathVariable Long cityId) {
+            @PathVariable("movieId") Long movieId,
+            @PathVariable("cityId") Long cityId) {
         return ResponseEntity.ok(showService.getShowsByMovieAndCityGroupedByCinema(movieId, cityId));
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<ShowDto> getShowById(@PathVariable Long id) {
+    public ResponseEntity<ShowDto> getShowById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(showService.getShowById(id));
     }
 }

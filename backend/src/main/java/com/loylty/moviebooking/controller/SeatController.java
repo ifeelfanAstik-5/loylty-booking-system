@@ -17,13 +17,13 @@ public class SeatController {
     private final SeatService seatService;
     
     @GetMapping("/show/{showId}/layout")
-    public ResponseEntity<List<SeatDto>> getSeatLayout(@PathVariable Long showId) {
+    public ResponseEntity<List<SeatDto>> getSeatLayout(@PathVariable("showId") Long showId) {
         return ResponseEntity.ok(seatService.getSeatLayout(showId));
     }
     
     @PostMapping("/show/{showId}/status")
     public ResponseEntity<List<SeatDto>> getSeatStatus(
-            @PathVariable Long showId,
+            @PathVariable("showId") Long showId,
             @RequestBody List<Long> seatIds) {
         return ResponseEntity.ok(seatService.getSeatStatus(showId, seatIds));
     }

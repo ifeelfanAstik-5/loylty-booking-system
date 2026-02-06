@@ -17,12 +17,12 @@ public class MovieController {
     private final MovieService movieService;
     
     @GetMapping("/city/{cityId}")
-    public ResponseEntity<List<MovieDto>> getMoviesByCity(@PathVariable Long cityId) {
+    public ResponseEntity<List<MovieDto>> getMoviesByCity(@PathVariable(name = "cityId") Long cityId) {
         return ResponseEntity.ok(movieService.getMoviesByCity(cityId));
     }
     
     @GetMapping("/search")
-    public ResponseEntity<List<MovieDto>> searchMovies(@RequestParam String title) {
+    public ResponseEntity<List<MovieDto>> searchMovies(@RequestParam(name = "title") String title) {
         return ResponseEntity.ok(movieService.searchMovies(title));
     }
 }
