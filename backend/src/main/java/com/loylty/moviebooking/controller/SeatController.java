@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/seats")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"https://loylty-booking-ui.vercel.app", "https://*.vercel.app", "http://localhost:5173"})
 public class SeatController {
     
     private final SeatService seatService;

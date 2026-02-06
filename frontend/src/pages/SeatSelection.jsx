@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const SeatSelection = () => {
   const [seats, setSeats] = useState([]);
@@ -18,11 +19,11 @@ const SeatSelection = () => {
 
   const fetchSeatLayout = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/seats/show/${showId}/layout`);
+      const response = await axios.get(API_ENDPOINTS.SEAT_LAYOUT(showId));
       setSeats(response.data);
       
       // Get show details
-      const showResponse = await axios.get(`http://localhost:8080/api/shows/${showId}`);
+      const showResponse = await axios.get(API_ENDPOINTS.SHOW_BY_ID(showId));
       setShow(showResponse.data);
       
       setLoading(false);
@@ -60,7 +61,7 @@ const SeatSelection = () => {
     }
 
     try {
-      const lockResponse = await axios.post('http://localhost:8080/api/bookings/lock-seats', {
+      const lockResponse = await axios.post(API_ENDPOINTS.LOCK_SEATS, {
         showId: parseInt(showId),
         seatIds: selectedSeats.map(seat => seat.id)
       });

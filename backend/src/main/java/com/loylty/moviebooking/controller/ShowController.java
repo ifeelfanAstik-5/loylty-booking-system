@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/shows")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"https://loylty-booking-ui.vercel.app", "https://*.vercel.app", "http://localhost:5173"})
 public class ShowController {
     
     private final ShowService showService;

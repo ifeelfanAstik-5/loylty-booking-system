@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"https://loylty-booking-ui.vercel.app", "https://*.vercel.app", "http://localhost:5173"})
 public class AdminController {
     
     private final CityService cityService;

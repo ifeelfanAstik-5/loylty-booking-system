@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const CinemaSelection = () => {
   const [shows, setShows] = useState([]);
@@ -15,7 +16,7 @@ const CinemaSelection = () => {
 
   const fetchShows = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/shows/movie/${movieId}/city/${cityId}/grouped`);
+      const response = await axios.get(API_ENDPOINTS.SHOWS_GROUPED(movieId, cityId));
       setShows(response.data);
       setLoading(false);
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const Payment = () => {
   const [bookingData, setBookingData] = useState(null);
@@ -89,7 +90,7 @@ const Payment = () => {
 
     try {
       // Create booking
-      const bookingResponse = await axios.post('http://localhost:8080/api/bookings/create', {
+      const bookingResponse = await axios.post(API_ENDPOINTS.CREATE_BOOKING, {
         showId: bookingData.showId,
         guestName: guestInfo.name,
         guestEmail: guestInfo.email,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const MoviesList = () => {
   const [movies, setMovies] = useState([]);
@@ -15,7 +16,7 @@ const MoviesList = () => {
 
   const fetchMovies = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/movies/city/${cityId}`);
+      const response = await axios.get(API_ENDPOINTS.MOVIES_BY_CITY(cityId));
       setMovies(response.data);
       setLoading(false);
     } catch (err) {

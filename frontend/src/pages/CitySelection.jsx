@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const CitySelection = () => {
   const [cities, setCities] = useState([]);
@@ -14,7 +15,7 @@ const CitySelection = () => {
 
   const fetchCities = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/cities');
+      const response = await axios.get(API_ENDPOINTS.CITIES);
       setCities(response.data);
       setLoading(false);
     } catch (err) {
