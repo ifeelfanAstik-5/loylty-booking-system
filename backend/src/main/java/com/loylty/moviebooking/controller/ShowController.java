@@ -27,7 +27,7 @@ public class ShowController {
     }
     
     @GetMapping("/movie/{movieId}/city/{cityId}/grouped")
-    public ResponseEntity<Map<com.loylty.moviebooking.dto.CinemaDto, List<ShowDto>>> getShowsByMovieAndCityGroupedByCinema(
+    public ResponseEntity<Map<String, List<ShowDto>>> getShowsByMovieAndCityGroupedByCinema(
             @PathVariable("movieId") Long movieId,
             @PathVariable("cityId") Long cityId) {
         return ResponseEntity.ok(showService.getShowsByMovieAndCityGroupedByCinema(movieId, cityId));

@@ -33,12 +33,16 @@ public class ShowService {
                 .collect(Collectors.toList());
     }
     
-    public Map<CinemaDto, List<ShowDto>> getShowsByMovieAndCityGroupedByCinema(Long movieId, Long cityId) {
+    public Map<String, List<ShowDto>> getShowsByMovieAndCityGroupedByCinema(Long movieId, Long cityId) {
         List<ShowDto> shows = getShowsByMovieAndCity(movieId, cityId);
         
         return shows.stream()
                 .collect(Collectors.groupingBy(
-                        ShowDto::getCinema,
+                        show -> {
+                            CinemaDto cinema = show.getCinema();
+                            return String.format("{\"id\":%d,\"name\":\"%s\",\"address\":\"%s\",\"theaterChainName\":\"%s\"}",
+                                    cinema.getId(), cinema.getName(), cinema.getAddress(), cinema.getTheaterChainName());
+                        },
                         Collectors.toList()
                 ));
     }
