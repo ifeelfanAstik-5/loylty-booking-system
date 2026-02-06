@@ -7,8 +7,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build the application without parent (install dependencies first)
-RUN mvn install -DskipTests
+# Build the application using Spring Boot plugin
+RUN mvn clean package spring-boot:repackage -DskipTests
 
 # Use OpenJDK runtime image
 FROM eclipse-temurin:17-jdk-alpine
