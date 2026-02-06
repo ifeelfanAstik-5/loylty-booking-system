@@ -12,6 +12,8 @@ import java.util.Set;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
     
+    List<Seat> findByScreenId(Long screenId);
+    
     List<Seat> findByScreenIdOrderByRowNumberAscSeatNumberAsc(Long screenId);
     
     @Query("SELECT s FROM Seat s WHERE s.screen.id = :screenId ORDER BY s.rowNumber, s.seatNumber")

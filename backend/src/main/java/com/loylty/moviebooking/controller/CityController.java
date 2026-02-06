@@ -1,6 +1,7 @@
 package com.loylty.moviebooking.controller;
 
 import com.loylty.moviebooking.dto.CityDto;
+import com.loylty.moviebooking.dto.ShowDto;
 import com.loylty.moviebooking.service.CityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +25,10 @@ public class CityController {
     @GetMapping("/{id}")
     public ResponseEntity<CityDto> getCityById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(cityService.getCityById(id));
+    }
+    
+    @GetMapping("/{cityId}/shows")
+    public ResponseEntity<List<ShowDto>> getShowsByCity(@PathVariable("cityId") Long cityId) {
+        return ResponseEntity.ok(cityService.getShowsByCity(cityId));
     }
 }

@@ -17,6 +17,16 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
            "JOIN FETCH s.screen sc " +
            "JOIN FETCH sc.cinema c " +
            "JOIN FETCH c.theaterChain " +
+           "WHERE c.city.id = :cityId " +
+           "AND s.showTime > CURRENT_TIMESTAMP " +
+           "ORDER BY s.showTime")
+    List<Show> findShowsByCity(@Param("cityId") Long cityId);
+    
+    @Query("SELECT s FROM Show s " +
+           "JOIN FETCH s.movie m " +
+           "JOIN FETCH s.screen sc " +
+           "JOIN FETCH sc.cinema c " +
+           "JOIN FETCH c.theaterChain " +
            "WHERE m.id = :movieId " +
            "AND c.city.id = :cityId " +
            "AND s.showTime > CURRENT_TIMESTAMP " +

@@ -1,5 +1,7 @@
 package com.loylty.moviebooking.controller;
 
+import com.loylty.moviebooking.dto.CinemaDto;
+import com.loylty.moviebooking.dto.SeatDto;
 import com.loylty.moviebooking.dto.ShowDto;
 import com.loylty.moviebooking.service.ShowService;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +36,15 @@ public class ShowController {
     @GetMapping("/{id}")
     public ResponseEntity<ShowDto> getShowById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(showService.getShowById(id));
+    }
+    
+    @GetMapping("/{showId}/cinemas")
+    public ResponseEntity<List<CinemaDto>> getCinemasWithShowtimes(@PathVariable("showId") Long showId) {
+        return ResponseEntity.ok(showService.getCinemasWithShowtimes(showId));
+    }
+    
+    @GetMapping("/{showId}/seats")
+    public ResponseEntity<List<SeatDto>> getSeatLayoutAndAvailability(@PathVariable("showId") Long showId) {
+        return ResponseEntity.ok(showService.getSeatLayoutAndAvailability(showId));
     }
 }

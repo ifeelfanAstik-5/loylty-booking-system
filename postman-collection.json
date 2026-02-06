@@ -38,6 +38,18 @@
               "path": ["cities", "{{cityId}}"]
             }
           }
+        },
+        {
+          "name": "Get Shows by City",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cities/{{cityId}}/shows",
+              "host": ["{{baseUrl}}"],
+              "path": ["cities", "{{cityId}}", "shows"]
+            }
+          }
         }
       ]
     },
@@ -113,6 +125,30 @@
               "raw": "{{baseUrl}}/shows/{{showId}}",
               "host": ["{{baseUrl}}"],
               "path": ["shows", "{{showId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Cinemas by Show",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shows/{{showId}}/cinemas",
+              "host": ["{{baseUrl}}"],
+              "path": ["shows", "{{showId}}", "cinemas"]
+            }
+          }
+        },
+        {
+          "name": "Get Seats by Show",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shows/{{showId}}/seats",
+              "host": ["{{baseUrl}}"],
+              "path": ["shows", "{{showId}}", "seats"]
             }
           }
         }
@@ -329,6 +365,23 @@
               "raw": "{{baseUrl}}/admin/shows",
               "host": ["{{baseUrl}}"],
               "path": ["admin", "shows"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
             }
           }
         }

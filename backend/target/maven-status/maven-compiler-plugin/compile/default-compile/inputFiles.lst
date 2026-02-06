@@ -6,6 +6,7 @@
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Show.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/SeatDto.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/CityDto.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/controller/HealthController.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/ShowDto.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/SeatLockRequest.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Cinema.java
