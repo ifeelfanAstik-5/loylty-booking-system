@@ -23,6 +23,9 @@ public interface ShowSeatRepository extends JpaRepository<ShowSeat, Long> {
     List<ShowSeat> findByShowIdAndLockUserIdAndLockExpiryTimeAfter(
         Long showId, String userId, LocalDateTime now);
     
+    @Query("SELECT s FROM ShowSeat s WHERE s.show.id = :showId AND s.id IN :seatIds")
+    List<ShowSeat> findByShowIdAndIdIn(@Param("showId") Long showId, @Param("seatIds") List<Long> seatIds);
+    
     @Modifying
     @Query("UPDATE ShowSeat s SET s.status = :availableStatus, s.lockUserId = NULL, s.lockExpiryTime = NULL WHERE s.lockExpiryTime < :now")
     int releaseExpiredLocks(@Param("availableStatus") ShowSeat.SeatStatus availableStatus, @Param("now") LocalDateTime now);

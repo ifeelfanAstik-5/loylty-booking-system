@@ -31,30 +31,50 @@ public class BookingService {
         showRepository.findById(request.getShowId())
                 .orElseThrow(() -> new RuntimeException("Show not found with id: " + request.getShowId()));
         
-        // Try to lock seats using ShowSeatService
-        boolean locked = showSeatService.lockSeats(request.getShowId(), 
-            convertToRowNumbers(request.getSeatIds()), 
-            convertToSeatNumbers(request.getSeatIds()), 
-            userId, 5);
+        // Validate seats exist and are available
+        List<ShowSeat> seatsToLock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
         
-        if (locked) {
-            LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
-            return new SeatLockResponse(
-                    true,
-                    "Seats locked successfully",
-                    request.getSeatIds(),
-                    expiryTime,
-                    userId
-            );
-        } else {
+        if (seatsToLock.size() != request.getSeatIds().size()) {
             return new SeatLockResponse(
                     false,
-                    "Some seats are already locked or booked",
+                    "Some seats not found for this show",
                     null,
                     null,
                     null
             );
         }
+        
+        // Check if all seats are available
+        for (ShowSeat seat : seatsToLock) {
+            if (seat.getStatus() != ShowSeat.SeatStatus.AVAILABLE) {
+                return new SeatLockResponse(
+                        false,
+                        "Some seats are already locked or booked",
+                        null,
+                        null,
+                        null
+                );
+            }
+        }
+        
+        // Lock the seats
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
+        for (ShowSeat seat : seatsToLock) {
+            seat.setStatus(ShowSeat.SeatStatus.LOCKED);
+            seat.setLockUserId(userId);
+            seat.setLockExpiryTime(expiryTime);
+            seat.setUpdatedAt(LocalDateTime.now());
+        }
+        
+        showSeatRepository.saveAll(seatsToLock);
+        
+        return new SeatLockResponse(
+                true,
+                "Seats locked successfully",
+                request.getSeatIds(),
+                expiryTime,
+                userId
+        );
     }
     
     public SeatLockResponse unlockSeats(SeatLockRequest request) {
@@ -81,7 +101,29 @@ public class BookingService {
     
     public boolean confirmBooking(Long showId, java.util.List<Long> seatIds, String userId) {
         try {
-            showSeatService.bookSeats(showId, convertToRowNumbers(seatIds), convertToSeatNumbers(seatIds));
+            // Get the seats to book
+            List<ShowSeat> seatsToBook = showSeatRepository.findByShowIdAndIdIn(showId, seatIds);
+            
+            if (seatsToBook.size() != seatIds.size()) {
+                return false; // Some seats not found
+            }
+            
+            // Check if all seats are locked by this user
+            for (ShowSeat seat : seatsToBook) {
+                if (seat.getStatus() != ShowSeat.SeatStatus.LOCKED || !userId.equals(seat.getLockUserId())) {
+                    return false; // Seat not locked by this user
+                }
+            }
+            
+            // Book the seats
+            for (ShowSeat seat : seatsToBook) {
+                seat.setStatus(ShowSeat.SeatStatus.BOOKED);
+                seat.setLockUserId(null);
+                seat.setLockExpiryTime(null);
+                seat.setUpdatedAt(LocalDateTime.now());
+            }
+            
+            showSeatRepository.saveAll(seatsToBook);
             return true;
         } catch (Exception e) {
             return false;
