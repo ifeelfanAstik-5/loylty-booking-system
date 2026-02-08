@@ -1,6 +1,7 @@
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/BookingService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/BookingRepository.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Seat.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/ShowSeatRepository.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/controller/CityController.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/cache/SeatLockService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Show.java
@@ -20,11 +21,14 @@
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/BookingSeat.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/MovieRepository.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Booking.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/ShowManagementService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/ShowService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/controller/ShowController.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Movie.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/CinemaRepository.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/controller/ShowManagementController.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/controller/AdminController.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/ShowSeatService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/cache/InMemorySeatLockService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/ShowRepository.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/SeatRepository.java
@@ -39,4 +43,5 @@
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/MovieService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/City.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/CinemaDto.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/ShowSeat.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/BookingResponse.java

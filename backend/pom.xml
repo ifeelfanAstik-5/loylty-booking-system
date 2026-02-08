@@ -20,6 +20,7 @@
         <spring.boot.version>3.2.0</spring.boot.version>
         <postgresql.version>42.7.1</postgresql.version>
         <lombok.version>1.18.30</lombok.version>
+        <flyway.version>9.22.3</flyway.version>
     </properties>
 
     <dependencyManagement>
@@ -67,6 +68,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
     </dependencies>
 

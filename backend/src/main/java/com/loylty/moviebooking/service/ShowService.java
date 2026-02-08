@@ -5,11 +5,11 @@ import com.loylty.moviebooking.dto.CinemaDto;
 import com.loylty.moviebooking.dto.MovieDto;
 import com.loylty.moviebooking.dto.SeatDto;
 import com.loylty.moviebooking.entity.Show;
-import com.loylty.moviebooking.entity.Seat;
+import com.loylty.moviebooking.entity.ShowSeat;
 import com.loylty.moviebooking.repository.ShowRepository;
-import com.loylty.moviebooking.repository.SeatRepository;
 import com.loylty.moviebooking.repository.BookingSeatRepository;
 import com.loylty.moviebooking.cache.SeatLockService;
+import com.loylty.moviebooking.repository.ShowSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 public class ShowService {
     
     private final ShowRepository showRepository;
-    private final SeatRepository seatRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final SeatLockService seatLockService;
+    private final ShowSeatRepository showSeatRepository;
     
     public List<ShowDto> getShowsByMovieAndCity(Long movieId, Long cityId) {
         return showRepository.findShowsByMovieAndCity(movieId, cityId).stream()
@@ -68,16 +68,24 @@ public class ShowService {
     }
     
     public List<SeatDto> getSeatLayoutAndAvailability(Long showId) {
-        Show show = showRepository.findById(showId)
-                .orElseThrow(() -> new RuntimeException("Show not found with id: " + showId));
+        // Use the new ShowSeat system
+        List<ShowSeat> showSeats = showSeatRepository.findByShowIdOrderByRowNumberAscSeatNumberAsc(showId);
         
-        List<Seat> seats = seatRepository.findByScreenIdOrdered(show.getScreen().getId());
-        Set<Long> bookedSeatIds = bookingSeatRepository.findBookedSeatIdsByShowId(showId);
-        Set<Long> lockedSeatIds = seatLockService.getLockedSeats(showId);
-        
-        return seats.stream()
-                .map(seat -> convertToSeatDto(seat, bookedSeatIds, lockedSeatIds, showId))
+        return showSeats.stream()
+                .map(this::convertToShowSeatDto)
                 .collect(Collectors.toList());
+    }
+    
+    private SeatDto convertToShowSeatDto(ShowSeat showSeat) {
+        return new SeatDto(
+                showSeat.getId(),
+                showSeat.getRowNumber(),
+                showSeat.getSeatNumber(),
+                showSeat.getCategory().name(),
+                showSeat.getStatus().name(),
+                showSeat.getLockUserId(),
+                showSeat.getLockExpiryTime()
+        );
     }
     
     private ShowDto convertToDto(Show show) {
@@ -108,35 +116,6 @@ public class ShowService {
                 show.getEndTime(),
                 show.getBasePrice(),
                 show.getPremiumPrice()
-        );
-    }
-    
-    private SeatDto convertToSeatDto(Seat seat, Set<Long> bookedSeatIds, Set<Long> lockedSeatIds, Long showId) {
-        String status;
-        String lockUserId = null;
-        java.time.LocalDateTime lockExpiryTime = null;
-        
-        if (bookedSeatIds.contains(seat.getId())) {
-            status = "BOOKED";
-        } else if (lockedSeatIds.contains(seat.getId())) {
-            status = "LOCKED";
-            SeatLockService.SeatLockInfo lockInfo = seatLockService.getSeatLockInfo(showId, seat.getId());
-            if (lockInfo != null) {
-                lockUserId = lockInfo.getUserId();
-                lockExpiryTime = lockInfo.getExpiryTime();
-            }
-        } else {
-            status = "AVAILABLE";
-        }
-        
-        return new SeatDto(
-                seat.getId(),
-                seat.getRowNumber(),
-                seat.getSeatNumber(),
-                seat.getCategory().name(),
-                status,
-                lockUserId,
-                lockExpiryTime
         );
     }
 }
