@@ -32,11 +32,8 @@ public class BookingController {
     }
     
     @PostMapping("/confirm")
-    public ResponseEntity<Map<String, Object>> confirmBooking(
-            @RequestParam Long showId,
-            @RequestParam java.util.List<Long> seatIds,
-            @RequestParam String userId) {
-        boolean confirmed = bookingService.confirmBooking(showId, seatIds, userId);
+    public ResponseEntity<Map<String, Object>> confirmBooking(@Valid @RequestBody BookingRequest request) {
+        boolean confirmed = bookingService.confirmBooking(request.getShowId(), request.getSeatIds(), request.getUserId());
         
         return ResponseEntity.ok(Map.of(
                 "success", confirmed,
