@@ -27,6 +27,18 @@ public class ShowService {
     private final SeatLockService seatLockService;
     private final ShowSeatRepository showSeatRepository;
     
+    public List<ShowDto> getAllShows() {
+        return showRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+    
+    public List<ShowDto> getShowsByCity(Long cityId) {
+        return showRepository.findShowsByCity(cityId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+    
     public List<ShowDto> getShowsByMovieAndCity(Long movieId, Long cityId) {
         return showRepository.findShowsByMovieAndCity(movieId, cityId).stream()
                 .map(this::convertToDto)

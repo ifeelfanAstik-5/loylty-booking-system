@@ -19,6 +19,16 @@ public class ShowController {
     
     private final ShowService showService;
     
+    @GetMapping
+    public ResponseEntity<List<ShowDto>> getAllShows() {
+        return ResponseEntity.ok(showService.getAllShows());
+    }
+    
+    @GetMapping("/city/{cityId}")
+    public ResponseEntity<List<ShowDto>> getShowsByCity(@PathVariable("cityId") Long cityId) {
+        return ResponseEntity.ok(showService.getShowsByCity(cityId));
+    }
+    
     @GetMapping("/movie/{movieId}/city/{cityId}")
     public ResponseEntity<List<ShowDto>> getShowsByMovieAndCity(
             @PathVariable("movieId") Long movieId,
