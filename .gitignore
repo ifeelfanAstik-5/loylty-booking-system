@@ -22,3 +22,52 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Environment files with sensitive data
+.env
+.env.local
+.env.production
+.env.test
+
+# Maven
+target/
+*.pid
+*.seed
+*.pid.lock
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+
+# Security - sensitive configuration files
+**/application-*.properties
+!application.properties.example
+**/application-*.yml
+!application.yml.example
+**/application-*.yaml
+!application.yaml.example
