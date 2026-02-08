@@ -8,7 +8,6 @@ import com.loylty.moviebooking.entity.Show;
 import com.loylty.moviebooking.entity.ShowSeat;
 import com.loylty.moviebooking.repository.ShowRepository;
 import com.loylty.moviebooking.repository.BookingSeatRepository;
-import com.loylty.moviebooking.cache.SeatLockService;
 import com.loylty.moviebooking.repository.ShowSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ public class ShowService {
     
     private final ShowRepository showRepository;
     private final BookingSeatRepository bookingSeatRepository;
-    private final SeatLockService seatLockService;
     private final ShowSeatRepository showSeatRepository;
     
     public List<ShowDto> getAllShows() {
