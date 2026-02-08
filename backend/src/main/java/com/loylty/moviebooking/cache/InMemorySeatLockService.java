@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
-// @Service - Disabled to prevent interference with ShowSeat system
+@Service
 public class InMemorySeatLockService implements SeatLockService {
     
     // Key: showId, Value: seatId -> LockInfo

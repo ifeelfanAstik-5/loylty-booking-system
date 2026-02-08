@@ -3,6 +3,7 @@ package com.loylty.moviebooking.service;
 import com.loylty.moviebooking.dto.*;
 import com.loylty.moviebooking.entity.*;
 import com.loylty.moviebooking.repository.*;
+import com.loylty.moviebooking.cache.SeatLockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final ShowSeatRepository showSeatRepository;
+    private final SeatLockService seatLockService;
     
     public SeatLockResponse lockSeats(SeatLockRequest request) {
         // Generate a user ID if not provided
@@ -31,50 +33,38 @@ public class BookingService {
         showRepository.findById(request.getShowId())
                 .orElseThrow(() -> new RuntimeException("Show not found with id: " + request.getShowId()));
         
-        // Validate seats exist and are available
-        List<ShowSeat> seatsToLock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
+        // Use in-memory seat locking for 5-minute timer
+        boolean locked = seatLockService.lockSeats(request.getShowId(), request.getSeatIds(), userId, 5);
         
-        if (seatsToLock.size() != request.getSeatIds().size()) {
+        if (locked) {
+            // Also update ShowSeat status to reflect the lock
+            List<ShowSeat> seatsToLock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
+            LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
+            
+            for (ShowSeat seat : seatsToLock) {
+                seat.setStatus(ShowSeat.SeatStatus.LOCKED);
+                seat.setLockUserId(userId);
+                seat.setLockExpiryTime(expiryTime);
+                seat.setUpdatedAt(LocalDateTime.now());
+            }
+            showSeatRepository.saveAll(seatsToLock);
+            
+            return new SeatLockResponse(
+                    true,
+                    "Seats locked successfully",
+                    request.getSeatIds(),
+                    expiryTime,
+                    userId
+            );
+        } else {
             return new SeatLockResponse(
                     false,
-                    "Some seats not found for this show",
+                    "Some seats are already locked or booked",
                     null,
                     null,
                     null
             );
         }
-        
-        // Check if all seats are available
-        for (ShowSeat seat : seatsToLock) {
-            if (seat.getStatus() != ShowSeat.SeatStatus.AVAILABLE) {
-                return new SeatLockResponse(
-                        false,
-                        "Some seats are already locked or booked",
-                        null,
-                        null,
-                        null
-                );
-            }
-        }
-        
-        // Lock the seats
-        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
-        for (ShowSeat seat : seatsToLock) {
-            seat.setStatus(ShowSeat.SeatStatus.LOCKED);
-            seat.setLockUserId(userId);
-            seat.setLockExpiryTime(expiryTime);
-            seat.setUpdatedAt(LocalDateTime.now());
-        }
-        
-        showSeatRepository.saveAll(seatsToLock);
-        
-        return new SeatLockResponse(
-                true,
-                "Seats locked successfully",
-                request.getSeatIds(),
-                expiryTime,
-                userId
-        );
     }
     
     public SeatLockResponse unlockSeats(SeatLockRequest request) {
@@ -88,8 +78,21 @@ public class BookingService {
             );
         }
         
-        // For simplicity, we'll implement unlock as setting seats back to AVAILABLE
-        // In a real implementation, you'd track which user locked which seats
+        // Unlock seats in both systems
+        seatLockService.unlockSeats(request.getShowId(), request.getSeatIds(), request.getUserId());
+        
+        // Update ShowSeat status
+        List<ShowSeat> seatsToUnlock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
+        for (ShowSeat seat : seatsToUnlock) {
+            if (request.getUserId().equals(seat.getLockUserId())) {
+                seat.setStatus(ShowSeat.SeatStatus.AVAILABLE);
+                seat.setLockUserId(null);
+                seat.setLockExpiryTime(null);
+                seat.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+        showSeatRepository.saveAll(seatsToUnlock);
+        
         return new SeatLockResponse(
                 true,
                 "Seats unlocked successfully",
@@ -101,30 +104,24 @@ public class BookingService {
     
     public boolean confirmBooking(Long showId, java.util.List<Long> seatIds, String userId) {
         try {
-            // Get the seats to book
-            List<ShowSeat> seatsToBook = showSeatRepository.findByShowIdAndIdIn(showId, seatIds);
+            // Confirm booking in in-memory system
+            boolean confirmed = seatLockService.confirmBooking(showId, seatIds, userId);
             
-            if (seatsToBook.size() != seatIds.size()) {
-                return false; // Some seats not found
-            }
-            
-            // Check if all seats are locked by this user
-            for (ShowSeat seat : seatsToBook) {
-                if (seat.getStatus() != ShowSeat.SeatStatus.LOCKED || !userId.equals(seat.getLockUserId())) {
-                    return false; // Seat not locked by this user
+            if (confirmed) {
+                // Update ShowSeat status to BOOKED
+                List<ShowSeat> seatsToBook = showSeatRepository.findByShowIdAndIdIn(showId, seatIds);
+                
+                for (ShowSeat seat : seatsToBook) {
+                    seat.setStatus(ShowSeat.SeatStatus.BOOKED);
+                    seat.setLockUserId(null);
+                    seat.setLockExpiryTime(null);
+                    seat.setUpdatedAt(LocalDateTime.now());
                 }
+                
+                showSeatRepository.saveAll(seatsToBook);
             }
             
-            // Book the seats
-            for (ShowSeat seat : seatsToBook) {
-                seat.setStatus(ShowSeat.SeatStatus.BOOKED);
-                seat.setLockUserId(null);
-                seat.setLockExpiryTime(null);
-                seat.setUpdatedAt(LocalDateTime.now());
-            }
-            
-            showSeatRepository.saveAll(seatsToBook);
-            return true;
+            return confirmed;
         } catch (Exception e) {
             return false;
         }
