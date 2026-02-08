@@ -20,11 +20,4 @@ public class SeatController {
     public ResponseEntity<List<SeatDto>> getSeatLayout(@PathVariable("showId") Long showId) {
         return ResponseEntity.ok(seatService.getSeatLayout(showId));
     }
-    
-    @PostMapping("/show/{showId}/status")
-    public ResponseEntity<List<SeatDto>> getSeatStatus(
-            @PathVariable("showId") Long showId,
-            @RequestBody List<Long> seatIds) {
-        return ResponseEntity.ok(seatService.getSeatStatus(showId, seatIds));
-    }
 }
