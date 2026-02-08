@@ -1,11 +1,107 @@
 -- Seed Production Data for Real-World Theater Seating Logic
 -- This migration creates all necessary base data and show seats
 
+-- First, check what tables exist and create missing ones if needed
+DO $$
+BEGIN
+    -- Create theater_chains table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'theater_chains') THEN
+        CREATE TABLE theater_chains (
+            id BIGSERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+    
+    -- Create cities table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'cities') THEN
+        CREATE TABLE cities (
+            id BIGSERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL UNIQUE,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+    
+    -- Create cinemas table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'cinemas') THEN
+        CREATE TABLE cinemas (
+            id BIGSERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            address TEXT NOT NULL,
+            city_id BIGINT NOT NULL,
+            theater_chain_id BIGINT NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+    
+    -- Create movies table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'movies') THEN
+        CREATE TABLE movies (
+            id BIGSERIAL PRIMARY KEY,
+            title VARCHAR(200) NOT NULL,
+            description TEXT,
+            duration_minutes INTEGER NOT NULL,
+            language VARCHAR(50) NOT NULL,
+            genre VARCHAR(100),
+            rating VARCHAR(10),
+            release_date DATE,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+    
+    -- Create screens table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'screens') THEN
+        CREATE TABLE screens (
+            id BIGSERIAL PRIMARY KEY,
+            name VARCHAR(50) NOT NULL,
+            cinema_id BIGINT NOT NULL,
+            total_rows INTEGER NOT NULL CHECK (total_rows > 0),
+            seats_per_row INTEGER NOT NULL CHECK (seats_per_row > 0),
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+    
+    -- Create seats table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'seats') THEN
+        CREATE TABLE seats (
+            id BIGSERIAL PRIMARY KEY,
+            screen_id BIGINT NOT NULL,
+            row_number INTEGER NOT NULL,
+            seat_number INTEGER NOT NULL,
+            category VARCHAR(20) NOT NULL DEFAULT 'REGULAR' CHECK (category IN ('REGULAR', 'PREMIUM')),
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            UNIQUE(screen_id, row_number, seat_number)
+        );
+    END IF;
+    
+    -- Create shows table if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'shows') THEN
+        CREATE TABLE shows (
+            id BIGSERIAL PRIMARY KEY,
+            movie_id BIGINT NOT NULL,
+            screen_id BIGINT NOT NULL,
+            show_time TIMESTAMP NOT NULL,
+            end_time TIMESTAMP NOT NULL,
+            base_price DECIMAL(10,2) NOT NULL CHECK (base_price > 0),
+            premium_price DECIMAL(10,2) NOT NULL CHECK (premium_price > 0),
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+    END IF;
+END $$;
+
 -- Theater chains
-INSERT INTO theater_chains (name, description, created_at, updated_at) VALUES
-('PVR Cinemas', 'Leading multiplex chain in India', NOW(), NOW()),
-('INOX Cinemas', 'Premium cinema experience', NOW(), NOW()),
-('Cinepolis', 'International cinema chain', NOW(), NOW())
+INSERT INTO theater_chains (name, created_at, updated_at) VALUES
+('PVR Cinemas', NOW(), NOW()),
+('INOX Cinemas', NOW(), NOW()),
+('Cinepolis', NOW(), NOW())
 ON CONFLICT DO NOTHING;
 
 -- Cities
