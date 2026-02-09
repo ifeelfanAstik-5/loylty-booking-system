@@ -25,6 +25,13 @@ const Payment = () => {
     const expiryTime = new Date(data.lockInfo.lockExpiryTime);
     const currentTime = new Date();
     const timeLeftSeconds = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
+    
+    // If time is already expired, handle it immediately
+    if (timeLeftSeconds <= 0) {
+      handleTimeout();
+      return;
+    }
+    
     setTimeLeft(timeLeftSeconds);
   }, [navigate]);
 
@@ -47,10 +54,54 @@ const Payment = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  // Refresh seat status periodically to get real-time updates
+  useEffect(() => {
+    if (!bookingData || !bookingData.showId) return;
+    
+    const refreshInterval = setInterval(async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.SEAT_LAYOUT(bookingData.showId));
+        setBookingData(prev => ({ ...prev, seats: response.data }));
+        
+        // Check if our locked seats are still locked
+        const lockedSeats = response.data.filter(seat => 
+          bookingData.selectedSeats.some(selected => selected.id === seat.id) && 
+          seat.status === 'LOCKED' && 
+          seat.lockUserId === bookingData.lockInfo.lockUserId
+        );
+        
+        // If our seats are no longer locked, the session has expired
+        if (lockedSeats.length !== bookingData.selectedSeats.length) {
+          handleTimeout();
+        }
+      } catch (err) {
+        console.error('Failed to refresh seat status:', err);
+      }
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [bookingData]);
+
   const handleTimeout = () => {
-    alert('Your session has expired. Please select seats again.');
+    // Check if the lock is actually expired by calling the backend
+    if (bookingData && bookingData.lockInfo) {
+      const expiryTime = new Date(bookingData.lockInfo.lockExpiryTime);
+      const currentTime = new Date();
+      
+      // If lock is still valid, don't expire the session
+      if (currentTime < expiryTime) {
+        const actualTimeLeft = Math.floor((expiryTime - currentTime) / 1000);
+        setTimeLeft(actualTimeLeft);
+        setError(null); // Clear any previous error
+        return;
+      }
+    }
+    
+    setError('Your session has expired. Please select seats again.');
     sessionStorage.removeItem('bookingData');
-    navigate('/');
+    setTimeout(() => {
+      navigate('/');
+    }, 2000); // Give user time to see the error message
   };
 
   const formatTime = (seconds) => {
