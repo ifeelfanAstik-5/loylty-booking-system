@@ -97,11 +97,11 @@ const Payment = () => {
   };
 
   const calculateTotal = () => {
-    if (!bookingData) return 0;
+    if (!bookingData || !bookingData.selectedSeats) return 0;
     
     return bookingData.selectedSeats.reduce((total, seat) => {
       const price = seat.category === 'PREMIUM' ? 
-        bookingData.show.premiumPrice : bookingData.show.basePrice;
+        bookingData.show?.premiumPrice : bookingData.show?.basePrice;
       return total + (price || 0);
     }, 0);
   };
@@ -114,6 +114,11 @@ const Payment = () => {
   const handlePayment = async () => {
     if (!guestInfo.name || !guestInfo.email) {
       setError('Please fill in all fields');
+      return;
+    }
+
+    if (!bookingData || !bookingData.selectedSeats || bookingData.selectedSeats.length === 0) {
+      setError('No seats selected. Please go back and select seats.');
       return;
     }
 
@@ -185,26 +190,26 @@ const Payment = () => {
               <p>{new Date(bookingData.show.showTime).toLocaleString()}</p>
             </div>
 
-            <div className="seats-info">
-              <h4>Selected Seats ({bookingData.selectedSeats.length})</h4>
-              <div className="seat-list">
-                {bookingData.selectedSeats.map(seat => (
-                  <span key={seat.id} className="seat-tag">
-                    {getRowLabel(seat.rowNumber)}{seat.seatNumber}
-                    {seat.category === 'PREMIUM' && ' ⭐'}
-                  </span>
-                ))}
+            <div className="selected-seats">
+                <h3>Selected Seats ({bookingData.selectedSeats?.length || 0})</h3>
+                <div className="seat-list">
+                  {(bookingData.selectedSeats || []).map(seat => (
+                    <span key={seat.id} className="seat-tag">
+                      {getRowLabel(seat.rowNumber)}{seat.seatNumber}
+                      {seat.category === 'PREMIUM' && ' ⭐'}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
 
             <div className="price-breakdown">
               <div className="price-row">
-                <span>Regular ({bookingData.selectedSeats.filter(s => s.category === 'REGULAR').length} seats):</span>
-                <span>₹{bookingData.selectedSeats.filter(s => s.category === 'REGULAR').length * (bookingData.show.basePrice || 0)}</span>
+                <span>Regular ({(bookingData.selectedSeats || []).filter(s => s.category === 'REGULAR').length} seats):</span>
+                <span>₹{(bookingData.selectedSeats || []).filter(s => s.category === 'REGULAR').length * (bookingData.show?.basePrice || 0)}</span>
               </div>
               <div className="price-row">
-                <span>Premium ({bookingData.selectedSeats.filter(s => s.category === 'PREMIUM').length} seats):</span>
-                <span>₹{bookingData.selectedSeats.filter(s => s.category === 'PREMIUM').length * (bookingData.show.premiumPrice || 0)}</span>
+                <span>Premium ({(bookingData.selectedSeats || []).filter(s => s.category === 'PREMIUM').length} seats):</span>
+                <span>₹{(bookingData.selectedSeats || []).filter(s => s.category === 'PREMIUM').length * (bookingData.show?.premiumPrice || 0)}</span>
               </div>
               <div className="price-row total">
                 <span>Total Amount:</span>
