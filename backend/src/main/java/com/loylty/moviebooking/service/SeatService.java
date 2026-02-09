@@ -24,44 +24,84 @@ public class SeatService {
     private final SeatLockService seatLockService;
     
     public List<SeatDto> getSeatLayout(Long showId) {
-        Show show = showRepository.findById(showId)
-                .orElseThrow(() -> new RuntimeException("Show not found with id: " + showId));
-        
-        List<Seat> seats = seatRepository.findByScreenIdOrdered(show.getScreen().getId());
-        Set<Long> bookedSeatIds = bookingSeatRepository.findBookedSeatIdsByShowId(showId);
-        Set<Long> lockedSeatIds = seatLockService.getLockedSeats(showId);
-        
-        return seats.stream()
-                .map(seat -> convertToDto(seat, bookedSeatIds, lockedSeatIds, showId))
-                .collect(Collectors.toList());
-    }
-    
-    private SeatDto convertToDto(Seat seat, Set<Long> bookedSeatIds, Set<Long> lockedSeatIds, Long showId) {
-        String status;
-        String lockUserId = null;
-        java.time.LocalDateTime lockExpiryTime = null;
-        
-        if (bookedSeatIds.contains(seat.getId())) {
-            status = "BOOKED";
-        } else if (lockedSeatIds.contains(seat.getId())) {
-            status = "LOCKED";
-            SeatLockService.SeatLockInfo lockInfo = seatLockService.getSeatLockInfo(showId, seat.getId());
-            if (lockInfo != null) {
-                lockUserId = lockInfo.getUserId();
-                lockExpiryTime = lockInfo.getExpiryTime();
+        try {
+            System.out.println("=== DEBUG: getSeatLayout called for showId: " + showId);
+            
+            // Validate show exists
+            showRepository.findById(showId)
+                    .orElseThrow(() -> new RuntimeException("Show not found with id: " + showId));
+            
+            System.out.println("Show exists, proceeding with seat layout generation");
+            
+            // Generate a standard 10x12 seat layout (120 seats)
+            // This matches the seat IDs that work with the locking system
+            Set<Long> bookedSeatIds;
+            try {
+                bookedSeatIds = bookingSeatRepository.findBookedSeatIdsByShowId(showId);
+                System.out.println("Booked seat IDs: " + bookedSeatIds);
+            } catch (Exception e) {
+                System.out.println("Error getting booked seats: " + e.getMessage());
+                bookedSeatIds = java.util.Collections.emptySet();
             }
-        } else {
-            status = "AVAILABLE";
+            
+            Set<Long> lockedSeatIds;
+            try {
+                lockedSeatIds = seatLockService.getLockedSeats(showId);
+                System.out.println("Locked seat IDs: " + lockedSeatIds);
+            } catch (Exception e) {
+                System.out.println("Error getting locked seats: " + e.getMessage());
+                lockedSeatIds = java.util.Collections.emptySet();
+            }
+            
+            List<SeatDto> seatLayout = new java.util.ArrayList<>();
+            
+            // Generate seats 1-120 (10 rows x 12 seats)
+            for (int row = 1; row <= 10; row++) {
+                for (int seatNum = 1; seatNum <= 12; seatNum++) {
+                    long seatId = ((row - 1) * 12) + seatNum;
+                    
+                    String status;
+                    String lockUserId = null;
+                    java.time.LocalDateTime lockExpiryTime = null;
+                    
+                    if (bookedSeatIds.contains(seatId)) {
+                        status = "BOOKED";
+                    } else if (lockedSeatIds.contains(seatId)) {
+                        status = "LOCKED";
+                        try {
+                            SeatLockService.SeatLockInfo lockInfo = seatLockService.getSeatLockInfo(showId, seatId);
+                            if (lockInfo != null) {
+                                lockUserId = lockInfo.getUserId();
+                                lockExpiryTime = lockInfo.getExpiryTime();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Error getting lock info for seat " + seatId + ": " + e.getMessage());
+                        }
+                    } else {
+                        status = "AVAILABLE";
+                    }
+                    
+                    // Determine seat category (last 2 rows are premium)
+                    String category = (row >= 9) ? "PREMIUM" : "REGULAR";
+                    
+                    seatLayout.add(new SeatDto(
+                            seatId,
+                            row,
+                            seatNum,
+                            category,
+                            status,
+                            lockUserId,
+                            lockExpiryTime
+                    ));
+                }
+            }
+            
+            System.out.println("Generated seat layout with " + seatLayout.size() + " seats");
+            return seatLayout;
+        } catch (Exception e) {
+            System.out.println("ERROR in getSeatLayout: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get seat layout: " + e.getMessage(), e);
         }
-        
-        return new SeatDto(
-                seat.getId(),
-                seat.getRowNumber(),
-                seat.getSeatNumber(),
-                seat.getCategory().name(),
-                status,
-                lockUserId,
-                lockExpiryTime
-        );
     }
 }

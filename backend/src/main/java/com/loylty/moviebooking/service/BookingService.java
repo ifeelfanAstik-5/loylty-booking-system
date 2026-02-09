@@ -80,16 +80,25 @@ public class BookingService {
     
     public boolean confirmBooking(Long showId, java.util.List<Long> seatIds, String userId) {
         try {
+            System.out.println("=== DEBUG: confirmBooking called ===");
+            System.out.println("showId: " + showId);
+            System.out.println("seatIds: " + seatIds);
+            System.out.println("userId: " + userId);
+            
             // Confirm booking in in-memory system
             boolean confirmed = seatLockService.confirmBooking(showId, seatIds, userId);
+            System.out.println("In-memory confirmation: " + confirmed);
             
             if (confirmed) {
                 // Create booking record in database
                 Show show = showRepository.findById(showId)
-                        .orElseThrow(() -> new RuntimeException("Show not found"));
+                        .orElseThrow(() -> new RuntimeException("Show not found: " + showId));
+                
+                System.out.println("Show found: " + show.getId());
                 
                 // Calculate total price
                 BigDecimal totalPrice = showSeatService.calculateTotalPrice(showId, seatIds);
+                System.out.println("Total price: " + totalPrice);
                 
                 // Create booking
                 Booking booking = new Booking();
@@ -101,6 +110,7 @@ public class BookingService {
                 booking.setStatus("CONFIRMED");
                 
                 booking = bookingRepository.save(booking);
+                System.out.println("Booking saved: " + booking.getId());
                 final Booking finalBooking = booking;
                 
                 // Create booking seats
@@ -116,10 +126,13 @@ public class BookingService {
                         .collect(Collectors.toList());
                 
                 bookingSeatRepository.saveAll(bookingSeats);
+                System.out.println("Booking seats saved: " + bookingSeats.size());
             }
             
             return confirmed;
         } catch (Exception e) {
+            System.out.println("ERROR in confirmBooking: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
