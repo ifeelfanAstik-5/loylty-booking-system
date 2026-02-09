@@ -17,6 +17,7 @@
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/dto/MovieDto.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/TheaterChainRepository.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/Screen.java
+/home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/config/TimezoneConfig.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/service/SeatService.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/entity/BookingSeat.java
 /home/darkenvy-5/loylty/loylty-booking-system/backend/src/main/java/com/loylty/moviebooking/repository/MovieRepository.java

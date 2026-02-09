@@ -22,15 +22,11 @@ const Payment = () => {
     setBookingData(data);
     
     // Calculate time left based on lock expiry time
-    // The backend returns UTC time, so we need to handle it properly
+    // The API middleware now handles timezone conversion automatically
     const expiryTime = new Date(data.lockInfo.lockExpiryTime);
     const currentTime = new Date();
     
-    // Add 5 hours to account for UTC to IST conversion
-    // This is a temporary fix - the real solution is to fix the backend timezone
-    const adjustedExpiryTime = new Date(expiryTime.getTime() + (5.5 * 60 * 60 * 1000));
-    
-    const timeLeftSeconds = Math.max(0, Math.floor((adjustedExpiryTime - currentTime) / 1000));
+    const timeLeftSeconds = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
     
     setTimeLeft(timeLeftSeconds);
   }, [navigate]);

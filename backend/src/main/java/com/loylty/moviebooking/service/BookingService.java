@@ -4,6 +4,7 @@ import com.loylty.moviebooking.dto.*;
 import com.loylty.moviebooking.entity.*;
 import com.loylty.moviebooking.repository.*;
 import com.loylty.moviebooking.cache.SeatLockService;
+import com.loylty.moviebooking.config.TimezoneConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,15 +86,24 @@ public class BookingService {
             System.out.println("seatIds: " + seatIds);
             System.out.println("userId: " + userId);
             
+            // Validate show exists and is in future
+            Show show = showRepository.findById(showId)
+                    .orElseThrow(() -> new RuntimeException("Show not found: " + showId));
+            
+            // Check if show time is in the future (IST time)
+            if (!TimezoneConfig.isShowTimeInFuture(show.getShowTime())) {
+                System.out.println("Show time is in the past: " + show.getShowTime());
+                return false;
+            }
+            
+            System.out.println("Show time is valid: " + show.getShowTime());
+            
             // Confirm booking in in-memory system
             boolean confirmed = seatLockService.confirmBooking(showId, seatIds, userId);
             System.out.println("In-memory confirmation: " + confirmed);
             
             if (confirmed) {
                 // Create booking record in database
-                Show show = showRepository.findById(showId)
-                        .orElseThrow(() -> new RuntimeException("Show not found: " + showId));
-                
                 System.out.println("Show found: " + show.getId());
                 
                 // Calculate total price
