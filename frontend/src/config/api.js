@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   // Bookings
   LOCK_SEATS: `${API_BASE_URL}/bookings/lock-seats`,
   UNLOCK_SEATS: `${API_BASE_URL}/bookings/unlock-seats`,
+  CONFIRM_BOOKING: `${API_BASE_URL}/bookings/confirm`,
   CREATE_BOOKING: `${API_BASE_URL}/bookings/create`,
   
   // Health

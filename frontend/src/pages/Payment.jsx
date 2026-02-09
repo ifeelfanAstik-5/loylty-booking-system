@@ -6,7 +6,7 @@ import { API_ENDPOINTS } from '../config/api';
 const Payment = () => {
   const [bookingData, setBookingData] = useState(null);
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '' });
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(300); // Back to 300 seconds
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -22,15 +22,15 @@ const Payment = () => {
     setBookingData(data);
     
     // Calculate time left based on lock expiry time
+    // The backend returns UTC time, so we need to handle it properly
     const expiryTime = new Date(data.lockInfo.lockExpiryTime);
     const currentTime = new Date();
-    const timeLeftSeconds = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
     
-    // If time is already expired, handle it immediately
-    if (timeLeftSeconds <= 0) {
-      handleTimeout();
-      return;
-    }
+    // Add 5 hours to account for UTC to IST conversion
+    // This is a temporary fix - the real solution is to fix the backend timezone
+    const adjustedExpiryTime = new Date(expiryTime.getTime() + (5.5 * 60 * 60 * 1000));
+    
+    const timeLeftSeconds = Math.max(0, Math.floor((adjustedExpiryTime - currentTime) / 1000));
     
     setTimeLeft(timeLeftSeconds);
   }, [navigate]);
@@ -72,7 +72,7 @@ const Payment = () => {
         
         // If our seats are no longer locked, the session has expired
         if (lockedSeats.length !== bookingData.selectedSeats.length) {
-          handleTimeout();
+          setTimeLeft(0); // Just set timeLeft to 0, don't call handleTimeout directly
         }
       } catch (err) {
         console.error('Failed to refresh seat status:', err);
@@ -83,20 +83,6 @@ const Payment = () => {
   }, [bookingData]);
 
   const handleTimeout = () => {
-    // Check if the lock is actually expired by calling the backend
-    if (bookingData && bookingData.lockInfo) {
-      const expiryTime = new Date(bookingData.lockInfo.lockExpiryTime);
-      const currentTime = new Date();
-      
-      // If lock is still valid, don't expire the session
-      if (currentTime < expiryTime) {
-        const actualTimeLeft = Math.floor((expiryTime - currentTime) / 1000);
-        setTimeLeft(actualTimeLeft);
-        setError(null); // Clear any previous error
-        return;
-      }
-    }
-    
     setError('Your session has expired. Please select seats again.');
     sessionStorage.removeItem('bookingData');
     setTimeout(() => {
@@ -140,13 +126,13 @@ const Payment = () => {
     setError(null);
 
     try {
-      // Create booking
-      const bookingResponse = await axios.post(API_ENDPOINTS.CREATE_BOOKING, {
+      // Confirm booking (seats should already be locked)
+      const bookingResponse = await axios.post(API_ENDPOINTS.CONFIRM_BOOKING, {
         showId: bookingData.showId,
-        guestName: guestInfo.name,
-        guestEmail: guestInfo.email,
         seatIds: bookingData.selectedSeats.map(seat => seat.id),
-        userId: bookingData.lockInfo.lockUserId
+        userId: bookingData.lockInfo.lockUserId,
+        guestName: guestInfo.name,
+        guestEmail: guestInfo.email
       });
 
       // Clear session storage
