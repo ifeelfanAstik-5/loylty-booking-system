@@ -22,7 +22,6 @@ public class BookingService {
     private final ShowRepository showRepository;
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
-    private final ShowSeatRepository showSeatRepository;
     private final SeatLockService seatLockService;
     
     public SeatLockResponse lockSeats(SeatLockRequest request) {
@@ -33,22 +32,11 @@ public class BookingService {
         showRepository.findById(request.getShowId())
                 .orElseThrow(() -> new RuntimeException("Show not found with id: " + request.getShowId()));
         
-        // Use in-memory seat locking for 5-minute timer
+        // Use pure in-memory seat locking
         boolean locked = seatLockService.lockSeats(request.getShowId(), request.getSeatIds(), userId, 5);
         
         if (locked) {
-            // Also update ShowSeat status to reflect the lock
-            List<ShowSeat> seatsToLock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
             LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
-            
-            for (ShowSeat seat : seatsToLock) {
-                seat.setStatus(ShowSeat.SeatStatus.LOCKED);
-                seat.setLockUserId(userId);
-                seat.setLockExpiryTime(expiryTime);
-                seat.setUpdatedAt(LocalDateTime.now());
-            }
-            showSeatRepository.saveAll(seatsToLock);
-            
             return new SeatLockResponse(
                     true,
                     "Seats locked successfully",
@@ -78,20 +66,8 @@ public class BookingService {
             );
         }
         
-        // Unlock seats in both systems
+        // Unlock seats in in-memory system
         seatLockService.unlockSeats(request.getShowId(), request.getSeatIds(), request.getUserId());
-        
-        // Update ShowSeat status
-        List<ShowSeat> seatsToUnlock = showSeatRepository.findByShowIdAndIdIn(request.getShowId(), request.getSeatIds());
-        for (ShowSeat seat : seatsToUnlock) {
-            if (request.getUserId().equals(seat.getLockUserId())) {
-                seat.setStatus(ShowSeat.SeatStatus.AVAILABLE);
-                seat.setLockUserId(null);
-                seat.setLockExpiryTime(null);
-                seat.setUpdatedAt(LocalDateTime.now());
-            }
-        }
-        showSeatRepository.saveAll(seatsToUnlock);
         
         return new SeatLockResponse(
                 true,
@@ -108,17 +84,38 @@ public class BookingService {
             boolean confirmed = seatLockService.confirmBooking(showId, seatIds, userId);
             
             if (confirmed) {
-                // Update ShowSeat status to BOOKED
-                List<ShowSeat> seatsToBook = showSeatRepository.findByShowIdAndIdIn(showId, seatIds);
+                // Create booking record in database
+                Show show = showRepository.findById(showId)
+                        .orElseThrow(() -> new RuntimeException("Show not found"));
                 
-                for (ShowSeat seat : seatsToBook) {
-                    seat.setStatus(ShowSeat.SeatStatus.BOOKED);
-                    seat.setLockUserId(null);
-                    seat.setLockExpiryTime(null);
-                    seat.setUpdatedAt(LocalDateTime.now());
-                }
+                // Calculate total price
+                BigDecimal totalPrice = showSeatService.calculateTotalPrice(showId, seatIds);
                 
-                showSeatRepository.saveAll(seatsToBook);
+                // Create booking
+                Booking booking = new Booking();
+                booking.setShow(show);
+                booking.setGuestName("Guest"); // Default name
+                booking.setGuestEmail("guest@example.com"); // Default email
+                booking.setTotalAmount(totalPrice);
+                booking.setBookingTime(LocalDateTime.now());
+                booking.setStatus("CONFIRMED");
+                
+                booking = bookingRepository.save(booking);
+                final Booking finalBooking = booking;
+                
+                // Create booking seats
+                BigDecimal seatPrice = totalPrice.divide(BigDecimal.valueOf(seatIds.size()));
+                List<BookingSeat> bookingSeats = seatIds.stream()
+                        .map(seatId -> {
+                            BookingSeat bookingSeat = new BookingSeat();
+                            bookingSeat.setBooking(finalBooking);
+                            bookingSeat.setSeatId(seatId);
+                            bookingSeat.setPrice(seatPrice);
+                            return bookingSeat;
+                        })
+                        .collect(Collectors.toList());
+                
+                bookingSeatRepository.saveAll(bookingSeats);
             }
             
             return confirmed;
@@ -139,9 +136,8 @@ public class BookingService {
             throw new RuntimeException("Failed to confirm booking. Seats may no longer be locked.");
         }
         
-        // Get show seats and calculate total amount
-        List<ShowSeat> showSeats = showSeatRepository.findAllById(request.getSeatIds());
-        BigDecimal totalAmount = calculateTotalAmount(showSeats);
+        // Calculate total amount
+        BigDecimal totalAmount = showSeatService.calculateTotalPrice(request.getShowId(), request.getSeatIds());
         
         // Create booking
         Booking booking = new Booking();
@@ -154,27 +150,22 @@ public class BookingService {
         booking = bookingRepository.save(booking);
         
         // Create booking seats
-        for (ShowSeat showSeat : showSeats) {
+        BigDecimal seatPrice = totalAmount.divide(BigDecimal.valueOf(request.getSeatIds().size()));
+        for (Long seatId : request.getSeatIds()) {
             BookingSeat bookingSeat = new BookingSeat();
             bookingSeat.setBooking(booking);
-            bookingSeat.setShowSeat(showSeat);
-            bookingSeat.setPrice(showSeat.getPrice());
+            bookingSeat.setSeatId(seatId);
+            bookingSeat.setPrice(seatPrice);
             bookingSeatRepository.save(bookingSeat);
         }
         
-        return convertToResponse(booking, showSeats);
+        return convertToResponse(booking, request.getSeatIds());
     }
     
-    private BigDecimal calculateTotalAmount(List<ShowSeat> showSeats) {
-        return showSeats.stream()
-                .map(ShowSeat::getPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-    
-    private BookingResponse convertToResponse(Booking booking, List<ShowSeat> showSeats) {
-        List<SeatDto> seatDtos = showSeats.stream()
-                .map(showSeat -> new SeatDto(showSeat.getId(), showSeat.getRowNumber(), showSeat.getSeatNumber(), 
-                        showSeat.getCategory().name(), "BOOKED", null, null))
+    private BookingResponse convertToResponse(Booking booking, List<Long> seatIds) {
+        // Convert seat IDs to SeatDto objects
+        List<SeatDto> seatDtos = seatIds.stream()
+                .map(seatId -> new SeatDto(seatId, 0, 0, "REGULAR", "BOOKED", null, null))
                 .collect(Collectors.toList());
         
         return new BookingResponse(
@@ -190,18 +181,5 @@ public class BookingService {
                 booking.getBookingTime(),
                 booking.getStatus()
         );
-    }
-    
-    // Helper methods to convert seat IDs to row/seat numbers
-    private List<Integer> convertToRowNumbers(List<Long> seatIds) {
-        return seatIds.stream()
-                .map(id -> ((id.intValue() - 1) / 12) + 1) // Assuming 12 seats per row
-                .collect(Collectors.toList());
-    }
-    
-    private List<Integer> convertToSeatNumbers(List<Long> seatIds) {
-        return seatIds.stream()
-                .map(id -> ((id.intValue() - 1) % 12) + 1) // Assuming 12 seats per row
-                .collect(Collectors.toList());
     }
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "booking_seats", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"booking_id", "show_seat_id"})
+    @UniqueConstraint(columnNames = {"booking_id", "seat_id"})
 })
 @Data
 @NoArgsConstructor
@@ -25,9 +25,8 @@ public class BookingSeat {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "show_seat_id", nullable = false)
-    private ShowSeat showSeat;
+    @Column(name = "seat_id", nullable = false)
+    private Long seatId;
     
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

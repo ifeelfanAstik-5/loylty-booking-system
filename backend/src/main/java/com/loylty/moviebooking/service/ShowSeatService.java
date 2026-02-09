@@ -182,6 +182,18 @@ public class ShowSeatService {
     }
     
     /**
+     * Calculate total price for selected seats
+     */
+    public BigDecimal calculateTotalPrice(Long showId, List<Long> seatIds) {
+        Show show = showRepository.findById(showId)
+                .orElseThrow(() -> new EntityNotFoundException("Show not found: " + showId));
+        
+        // For simplicity, use base price for all seats
+        // In a real system, you'd check seat categories
+        return show.getBasePrice().multiply(BigDecimal.valueOf(seatIds.size()));
+    }
+    
+    /**
      * Determine seat category based on row position
      */
     private ShowSeat.SeatCategory determineSeatCategory(int rowNumber, int totalRows) {
